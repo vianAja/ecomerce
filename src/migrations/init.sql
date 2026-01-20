@@ -71,14 +71,14 @@ CREATE INDEX idx_orders_status ON orders(status);
 
 -- Insert sample products
 INSERT INTO products (name, description, price, stock, category, image_url) VALUES
-('Laptop Pro 15', 'High-performance laptop with 16GB RAM', 1299.99, 50, 'Electronics', 'https://via.placeholder.com/300x300?text=Laptop'),
-('Wireless Mouse', 'Ergonomic wireless mouse with USB receiver', 29.99, 200, 'Electronics', 'https://via.placeholder.com/300x300?text=Mouse'),
-('USB-C Cable', 'Fast charging USB-C cable 2m length', 15.99, 500, 'Accessories', 'https://via.placeholder.com/300x300?text=Cable'),
-('Mechanical Keyboard', 'RGB backlit mechanical gaming keyboard', 89.99, 100, 'Electronics', 'https://via.placeholder.com/300x300?text=Keyboard'),
-('Webcam HD', '1080p HD webcam with microphone', 59.99, 75, 'Electronics', 'https://via.placeholder.com/300x300?text=Webcam'),
-('Laptop Stand', 'Adjustable aluminum laptop stand', 39.99, 150, 'Accessories', 'https://via.placeholder.com/300x300?text=Stand'),
-('Monitor 27"', '4K UHD 27-inch monitor', 449.99, 30, 'Electronics', 'https://via.placeholder.com/300x300?text=Monitor'),
-('Headphones', 'Noise-cancelling wireless headphones', 199.99, 80, 'Electronics', 'https://via.placeholder.com/300x300?text=Headphones'),
-('Phone Case', 'Protective phone case for latest models', 19.99, 300, 'Accessories', 'https://via.placeholder.com/300x300?text=Case'),
-('Portable SSD', '1TB portable external SSD', 129.99, 60, 'Storage', 'https://via.placeholder.com/300x300?text=SSD')
-ON CONFLICT DO NOTHING;
+('Laptop Pro 15', 'High-performance laptop with 16GB RAM and SSD storage', 1299.99, 50, 'Electronics', 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1000&auto=format'),
+('Wireless Mouse', 'Ergonomic wireless mouse with fast optical sensor', 29.99, 200, 'Electronics', 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=1000&auto=format'),
+('USB-C Cable', 'Durable fast charging USB-C cable 2m length', 15.99, 500, 'Accessories', 'https://images.unsplash.com/photo-1614623529979-37e40854446c?q=80&w=1000&auto=format'),
+('Mechanical Keyboard', 'RGB backlit mechanical gaming keyboard with blue switches', 89.99, 100, 'Electronics', 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?q=80&w=1000&auto=format'),
+('Webcam HD', '1080p HD webcam with built-in noise-reducing mic', 59.99, 75, 'Electronics', 'https://images.unsplash.com/photo-1610484138601-3446a49d6da4?q=80&w=1000&auto=format'),
+('Laptop Stand', 'Adjustable aluminum laptop stand for better ergonomics', 39.99, 150, 'Accessories', 'https://images.unsplash.com/photo-1611186871348-b1ec696e52c9?q=80&w=1000&auto=format'),
+('Monitor 27"', '4K UHD 27-inch professional IPS monitor', 449.99, 30, 'Electronics', 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?q=80&w=1000&auto=format'),
+('Headphones', 'Premium noise-cancelling wireless headphones', 199.99, 80, 'Electronics', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format'),
+('Phone Case', 'Minimalist protective phone case for premium feel', 19.99, 300, 'Accessories', 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?q=80&w=1000&auto=format'),
+('Portable SSD', '1TB ultra-fast portable external SSD storage', 129.99, 60, 'Storage', 'https://images.unsplash.com/photo-1597740985671-2a8a3b80ec0f?q=80&w=1000&auto=format')
+ON CONFLICT (name) DO UPDATE SET image_url = EXCLUDED.image_url;

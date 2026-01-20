@@ -3,9 +3,17 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 
 const register = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   const { email, password, full_name } = req.body;
+  
 
   try {
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+    }
     const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     
     if (userExists.rows.length > 0) {

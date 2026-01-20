@@ -39,13 +39,13 @@ const startServer = async () => {
   try {
     await connectRedis();
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`
 ╔════════════════════════════════════════╗
-║   🚀 E-commerce Server Running        ║
-║   📍 Port: ${PORT}                       ║
-║   🌍 URL: http://localhost:${PORT}       ║
-║   📚 API: http://localhost:${PORT}/api   ║
+║   🚀 E-commerce Server Running         ║
+║   📍 Port: ${PORT}                     ║
+║   🌍 URL: http://0.0.0.0:${PORT}       ║
+║   📚 API: http://0.0.0.0:${PORT}/api   ║
 ╚════════════════════════════════════════╝
       `);
     });

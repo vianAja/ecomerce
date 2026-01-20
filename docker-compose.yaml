@@ -24,21 +24,21 @@ services:
       retries: 5
 
   # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: ecommerce_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - ecommerce_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#  redis:
+#    image: redis:7-alpine
+#    container_name: ecommerce_redis
+#    restart: unless-stopped
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - redis_data:/data
+#    networks:
+#      - ecommerce_network
+#    healthcheck:
+#      test: ["CMD", "redis-cli", "ping"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
 
   # Node.js Application
   app:
@@ -46,6 +46,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ecommerce_app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - "${PORT}:${PORT}"
@@ -64,8 +66,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+#      redis:
+#        condition: service_healthy
     networks:
       - ecommerce_network
     volumes:
@@ -78,4 +80,4 @@ networks:
 
 volumes:
   postgres_data:
-  redis_data:
+#  redis_data:

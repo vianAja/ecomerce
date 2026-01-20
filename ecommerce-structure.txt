@@ -1,0 +1,71 @@
+# E-commerce Application - Project Structure
+
+```
+ecommerce-app/
+├── src/
+│   ├── config/
+│   │   ├── database.js
+│   │   └── redis.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── productController.js
+│   │   ├── cartController.js
+│   │   └── orderController.js
+│   ├── middleware/
+│   │   └── auth.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Product.js
+│   │   ├── Cart.js
+│   │   └── Order.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── productRoutes.js
+│   │   ├── cartRoutes.js
+│   │   └── orderRoutes.js
+│   ├── services/
+│   │   ├── cacheService.js
+│   │   └── transactionService.js
+│   └── app.js
+├── public/
+│   ├── login.html
+│   └── styles.css
+├── migrations/
+│   └── init.sql
+├── .env.example
+├── .env
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── package.json
+└── README.md
+```
+
+## File Descriptions
+
+### Configuration Files
+- **database.js**: PostgreSQL connection setup
+- **redis.js**: Redis client configuration
+
+### Controllers
+- **authController.js**: Handle login, register, logout
+- **productController.js**: Product CRUD operations
+- **cartController.js**: Shopping cart management
+- **orderController.js**: Order processing and transactions
+
+### Models
+- **User.js**: User data model
+- **Product.js**: Product data model
+- **Cart.js**: Shopping cart model
+- **Order.js**: Order and order items model
+
+### Services
+- **cacheService.js**: Redis caching logic
+- **transactionService.js**: Database transaction handling
+
+### Routes
+API endpoint definitions for each resource
+
+### Docker Files
+- **Dockerfile**: Node.js application container
+- **docker-compose.yml**: Multi-container orchestration (app, postgres, redis)

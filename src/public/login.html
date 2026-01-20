@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1>🛒 E-commerce Store</h1>
+            
+            <div id="loginForm" class="form-container">
+                <h2>Login</h2>
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <p>Don't have an account? <a href="#" onclick="toggleForms()">Register</a></p>
+            </div>
+
+            <div id="registerForm" class="form-container" style="display: none;">
+                <h2>Register</h2>
+                <form onsubmit="handleRegister(event)">
+                    <input type="text" id="registerName" placeholder="Full Name" required>
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required>
+                    <button type="submit">Register</button>
+                </form>
+                <p>Already have an account? <a href="#" onclick="toggleForms()">Login</a></p>
+            </div>
+
+            <div id="dashboard" style="display: none;">
+                <h2>Welcome, <span id="userName"></span>!</h2>
+                <div class="dashboard-actions">
+                    <button onclick="loadProducts()">Browse Products</button>
+                    <button onclick="viewCart()">View Cart</button>
+                    <button onclick="viewOrders()">My Orders</button>
+                    <button onclick="logout()">Logout</button>
+                </div>
+
+                <div id="productsSection" style="display: none;">
+                    <h3>Products</h3>
+                    <div class="filters">
+                        <select id="categoryFilter" onchange="loadProducts()">
+                            <option value="">All Categories</option>
+                        </select>
+                        <input type="text" id="searchInput" placeholder="Search products..." onkeyup="debounceSearch()">
+                    </div>
+                    <div id="productsList" class="products-grid"></div>
+                </div>
+
+                <div id="cartSection" style="display: none;">
+                    <h3>Shopping Cart</h3>
+                    <div id="cartItems"></div>
+                    <div id="cartTotal"></div>
+                    <button onclick="checkout()" id="checkoutBtn" style="display: none;">Proceed to Checkout</button>
+                </div>
+
+                <div id="ordersSection" style="display: none;">
+                    <h3>My Orders</h3>
+                    <div id="ordersList"></div>
+                </div>
+
+                <div id="checkoutSection" style="display: none;">
+                    <h3>Checkout</h3>
+                    <form onsubmit="placeOrder(event)">
+                        <textarea id="shippingAddress" placeholder="Shipping Address" required rows="4"></textarea>
+                        <button type="submit">Place Order</button>
+                        <button type="button" onclick="viewCart()">Back to Cart</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let token = localStorage.getItem('token');
+        let searchTimeout;
+
+        if (token) {
+            loadUserProfile();
+        }
+
+        function toggleForms() {
+            document.getElementById('loginForm').style.display = 
+                document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = 
+                document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showMessage(msg, type = 'info') {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = msg;
+            msgEl.className = `message ${type}`;
+            setTimeout(() => msgEl.className = 'message', 3000);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    showMessage('Login successful!', 'success');
+                    loadUserProfile();
+                } else {
+                    showMessage(data.error || 'Login failed', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error', 'error');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const full_name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, full_name })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    showMessage('Registration successful!', 'success');
+                    loadUserProfile();
+                } else {
+                    showMessage(data.error || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error', 'error');
+            }
+        }
+
+        async function loadUserProfile() {
+            try {
+                const res = await fetch(`${API_URL}/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('userName').textContent = data.user.full_name;
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('registerForm').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    loadCategories();
+                } else {
+                    logout();
+                }
+            } catch (err) {
+                logout();
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_URL}/products/categories`);
+                const data = await res.json();
+                const select = document.getElementById('categoryFilter');
+                data.categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Failed to load categories');
+            }
+        }
+
+        async function loadProducts() {
+            hideAllSections();
+            document.getElementById('productsSection').style.display = 'block';
+
+            const category = document.getElementById('categoryFilter').value;
+            const search = document.getElementById('searchInput').value;
+            let url = `${API_URL}/products?`;
+            if (category) url += `category=${category}&`;
+            if (search) url += `search=${search}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                displayProducts(data.products);
+            } catch (err) {
+                showMessage('Failed to load products', 'error');
+            }
+        }
+
+        function displayProducts(products) {
+            const grid = document.getElementById('productsList');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <img src="${p.image_url}" alt="${p.name}">
+                    <h4>${p.name}</h4>
+                    <p>${p.description}</p>
+                    <p class="price">$${parseFloat(p.price).toFixed(2)}</p>
+                    <p class="stock">Stock: ${p.stock}</p>
+                    <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}">
+                    <button onclick="addToCart(${p.id})">Add to Cart</button>
+                </div>
+            `).join('');
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadProducts, 500);
+        }
+
+        async function addToCart(productId) {
+            const qty = parseInt(document.getElementById(`qty-${productId}`).value);
+            try {
+                const res = await fetch(`${API_URL}/cart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product_id: productId, quantity: qty })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage('Added to cart!', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to add to cart', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error', 'error');
+            }
+        }
+
+        async function viewCart() {
+            hideAllSections();
+            document.getElementById('cartSection').style.display = 'block';
+
+            try {
+                const res = await fetch(`${API_URL}/cart`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                displayCart(data.cart);
+            } catch (err) {
+                showMessage('Failed to load cart', 'error');
+            }
+        }
+
+        function displayCart(cart) {
+            const itemsEl = document.getElementById('cartItems');
+            const totalEl = document.getElementById('cartTotal');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (cart.items.length === 0) {
+                itemsEl.innerHTML = '<p>Your cart is empty</p>';
+                checkoutBtn.style.display = 'none';
+                totalEl.innerHTML = '';
+                return;
+            }
+
+            itemsEl.innerHTML = cart.items.map(item => `
+                <div class="cart-item">
+                    <img src="${item.image_url}" alt="${item.name}">
+                    <div>
+                        <h4>${item.name}</h4>
+                        <p>$${parseFloat(item.price).toFixed(2)} x ${item.quantity} = $${parseFloat(item.subtotal).toFixed(2)}</p>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})">Remove</button>
+                </div>
+            `).join('');
+
+            totalEl.innerHTML = `<h3>Total: $${parseFloat(cart.total).toFixed(2)}</h3>`;
+            checkoutBtn.style.display = 'block';
+        }
+
+        async function removeFromCart(itemId) {
+            try {
+                const res = await fetch(`${API_URL}/cart/${itemId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    showMessage('Item removed', 'success');
+                    viewCart();
+                }
+            } catch (err) {
+                showMessage('Failed to remove item', 'error');
+            }
+        }
+
+        function checkout() {
+            hideAllSections();
+            document.getElementById('checkoutSection').style.display = 'block';
+        }
+
+        async function placeOrder(e) {
+            e.preventDefault();
+            const address = document.getElementById('shippingAddress').value;
+
+            try {
+                const res = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ shipping_address: address })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage('Order placed successfully!', 'success');
+                    document.getElementById('shippingAddress').value = '';
+                    viewOrders();
+                } else {
+                    showMessage(data.error || 'Failed to place order', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error', 'error');
+            }
+        }
+
+        async function viewOrders() {
+            hideAllSections();
+            document.getElementById('ordersSection').style.display = 'block';
+
+            try {
+                const res = await fetch(`${API_URL}/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                displayOrders(data.orders);
+            } catch (err) {
+                showMessage('Failed to load orders', 'error');
+            }
+        }
+
+        function displayOrders(orders) {
+            const ordersEl = document.getElementById('ordersList');
+            if (orders.length === 0) {
+                ordersEl.innerHTML = '<p>No orders yet</p>';
+                return;
+            }
+
+            ordersEl.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <h4>Order #${order.id}</h4>
+                    <p>Total: $${parseFloat(order.total_amount).toFixed(2)}</p>
+                    <p>Status: <span class="status-${order.status}">${order.status}</span></p>
+                    <p>Date: ${new Date(order.created_at).toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        }
+
+        function hideAllSections() {
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('cartSection').style.display = 'none';
+            document.getElementById('ordersSection').style.display = 'none';
+            document.getElementById('checkoutSection').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            location.reload();
+        }
+    </script>
+</body>
+</html>

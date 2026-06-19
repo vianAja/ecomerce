@@ -1,17 +1,12 @@
 pipeline {
-    // Menjalankan pipeline di dalam container Docker (Docker-in-Docker)
-    agent {
-        docker {
-            image 'docker:dind'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     
     environment {
         STAGING_IP = '172.10.10.1'
-        // 'staging-ssh-key' adalah ID dari credentials yang dibuat di dashboard Jenkins
-        SSH_CRED = 'staging-ssh-key' 
-        PROJECT_DIR = '/path/to/your/project'
+        SSH_CRED = 'credentials-stg-server' 
+	STAGING_USER = 'jenkins' 
+        PROJECT_DIR = '/root/project/ecomerce'
+
     }
 
     stages {
@@ -32,7 +27,6 @@ pipeline {
 
         stage('Deploy to Staging') {
             steps {
-                // Menggunakan SSH Agent untuk masuk ke server staging
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no user@${STAGING_IP} '

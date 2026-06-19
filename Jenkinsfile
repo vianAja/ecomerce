@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        STAGING_IP = '172.10.10.1'
+        STAGING_IP = '172.2.1.10'
         SSH_CRED = 'credentials-stg-server' 
 	STAGING_USER = 'jenkins' 
         PROJECT_DIR = '/root/project/ecomerce'

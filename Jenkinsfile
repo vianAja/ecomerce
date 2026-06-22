@@ -54,8 +54,9 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
                             cd ${PROJECT_DIR_STG}
-                            docker compose down
+                            docker compose down -v
                             docker compose up -d --build
+			    docker compose ps -a
                         '
                     """
                 }
@@ -90,8 +91,9 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no  ${PRODUCTION_USER}@${PRODUCTION_IP} '
                             cd ${PROJECT_DIR_PROD}
-                            docker compose down
+                            docker compose down -v
                             docker compose up -d --build
+			    docker compose ps -a
                         '
                     """
                 }

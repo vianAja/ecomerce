@@ -6,7 +6,7 @@ pipeline {
         SSH_CRED = 'credentials-stg-server' 
 
     	IMAGES_NAME = 'webapps'
-	    IMAGES_TAG = 'v1'
+	    IMAGES_TAG = 'v1.1'
 
     	STAGING_USER = 'jenkins' 
         PROJECT_DIR = '/root/project/ecomerce'

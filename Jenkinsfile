@@ -20,8 +20,6 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image..."
-		    sh "id"
-		    sh "hostname && ip a"
                     sh "docker build -t my-app:staging ."
                 }
             }
@@ -33,7 +31,8 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-			    git clone -b staging https://github.com/vianAja/ecomerce.git
+			    pwd &&
+			    git clone -b staging https://github.com/vianAja/ecomerce.git &&
 
                             cd /home/jenkins/ecomerce &&
                             git pull origin staging &&

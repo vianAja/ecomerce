@@ -20,6 +20,7 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image..."
+		    sh "id"
                     sh "docker build -t my-app:staging ."
                 }
             }

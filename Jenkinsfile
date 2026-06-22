@@ -31,11 +31,11 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-			    pwd &&
-			    git clone -b staging https://github.com/vianAja/ecomerce.git &&
+			    pwd
+			    git clone -b staging https://github.com/vianAja/ecomerce.git
 
-                            cd /home/jenkins/ecomerce &&
-                            git pull origin staging &&
+                            cd /home/jenkins/ecomerce
+                            git pull origin staging 
                         '
                     """
 		    withCredentials([file(credentialsId: 'staging-env-file', variable: 'SECRET_ENV')]) {

@@ -21,6 +21,7 @@ pipeline {
                 script {
                     echo "Building Docker Image..."
 		    sh "id"
+		    sh "hostname && ip a"
                     sh "docker build -t my-app:staging ."
                 }
             }

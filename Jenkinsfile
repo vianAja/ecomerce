@@ -37,8 +37,17 @@ pipeline {
 
                             cd /home/jenkins/ecomerce &&
                             git pull origin staging &&
-                            docker compose down &&
-                            docker compose up -d --build
+                        '
+                    """
+		    withCredentials([file(credentialsId: 'staging-env-file', variable: 'SECRET_ENV')]) {
+                        sh 'scp -o StrictHostKeyChecking=no \$SECRET_ENV ${STAGING_USER}@${STAGING_IP}:${PROJECT_DIR}/.env'
+                    }
+
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
+                            cd ${PROJECT_DIR}
+                            docker-compose down
+                            docker-compose up -d --build
                         '
                     """
                 }

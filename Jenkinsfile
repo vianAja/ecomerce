@@ -40,11 +40,19 @@ pipeline {
                 // Menggunakan SSH Agent untuk eksekusi remote
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-			    git clone -b staging https://github.com/vianAja/ecomerce.git
+			ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
+                            rm -f ${PROJECT_DIR_STG}/.env || true
 
-                            cd ${PROJECT_DIR_STG}
-                            git pull origin staging 
+                            if [ ! -d ${PROJECT_DIR_STG} ]; then
+                                echo "Folder belum ada. Melakukan Git Clone..."
+                                git clone -b staging https://github.com/vianAja/ecomerce.git
+                            else
+                                echo "Folder sudah ada. Melakukan Git Pull paksa..."
+                                cd ${PROJECT_DIR_STG}
+
+                                git reset --hard origin/staging
+                                git pull origin staging 
+                            fi
                         '
                     """
 		    withCredentials([file(credentialsId: 'staging-env-file', variable: 'SECRET_ENV')]) {
@@ -76,7 +84,9 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} '
-			    if [ ! -d ${PROD_BRANCH} ]; then
+			    rm -f ${PROJECT_DIR_PROD}/.env || true
+
+			    if [ ! -d ${PROJECT_DIR_PROD} ]; then
                                 git clone -b ${PROD_BRANCH} https://github.com/vianAja/ecomerce.git
                             else
                                 cd ${PROJECT_DIR_PROD}

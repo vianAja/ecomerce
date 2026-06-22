@@ -6,7 +6,7 @@ pipeline {
         SSH_CRED = 'credentials-stg-server' 
 	STAGING_USER = 'jenkins' 
         PROJECT_DIR = '/root/project/ecomerce'
-
+	PROJECT_DIR_STG = '/home/jenkins/ecomerce'
     }
 
     stages {
@@ -34,12 +34,12 @@ pipeline {
 			    pwd
 			    git clone -b staging https://github.com/vianAja/ecomerce.git
 
-                            cd /home/jenkins/ecomerce
+                            cd ${PROJECT_DIR_STG}
                             git pull origin staging 
                         '
                     """
 		    withCredentials([file(credentialsId: 'staging-env-file', variable: 'SECRET_ENV')]) {
-                        sh 'scp -o StrictHostKeyChecking=no \$SECRET_ENV ${STAGING_USER}@${STAGING_IP}:${PROJECT_DIR}/.env'
+                        sh 'scp -o StrictHostKeyChecking=no \$SECRET_ENV ${STAGING_USER}@${STAGING_IP}:${PROJECT_DIR_STG}/.env'
                     }
 
                     sh """

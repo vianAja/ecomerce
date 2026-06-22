@@ -33,7 +33,7 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-                            cd ${PROJECT_DIR} &&
+                            cd /home/jenkins/ecomerce &&
                             git pull origin staging &&
                             docker-compose down &&
                             docker-compose up -d --build

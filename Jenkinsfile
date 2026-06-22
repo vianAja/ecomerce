@@ -64,6 +64,7 @@ pipeline {
                             cd ${PROJECT_DIR_STG}
                             docker compose down -v
                             docker compose up -d --build
+			    sleep 60
 			    docker compose ps -a
                         '
                     """
@@ -103,6 +104,7 @@ pipeline {
                             cd ${PROJECT_DIR_PROD}
                             docker compose down -v
                             docker compose up -d --build
+			    sleep 60
 			    docker compose ps -a
                         '
                     """

@@ -37,8 +37,8 @@ pipeline {
 
                             cd /home/jenkins/ecomerce &&
                             git pull origin staging &&
-                            docker-compose down &&
-                            docker-compose up -d --build
+                            docker compose down &&
+                            docker compose up -d --build
                         '
                     """
                 }

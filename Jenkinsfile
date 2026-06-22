@@ -27,29 +27,18 @@ pipeline {
             }
         }
 
-        stage('Deploy to Staging') {
+	stage('Deploy to Staging Server') {
             steps {
-                script {
-                    // 1. Definisikan konfigurasi server remote
-                    def remote = [:]
-                    remote.name = 'staging-server'
-                    remote.host = env.STAGING_IP
-                    remote.user = env.STAGING_USER
-                    remote.allowAnyHosts = true // Setara dengan StrictHostKeyChecking=no
-
-                    // 2. Ambil Private Key dari Jenkins Credentials
-                    withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CRED, keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: '')]) {
-                        remote.identityFile = identity
-                        
-                        // 3. Jalankan perintah di server staging
-                        echo "Menghubungkan ke ${remote.host}..."
-                        sshCommand remote: remote, command: """
+                // Menggunakan SSH Agent untuk eksekusi remote
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
                             cd ${PROJECT_DIR} &&
                             git pull origin staging &&
                             docker-compose down &&
                             docker-compose up -d --build
-                        """
-                    }
+                        '
+                    """
                 }
             }
         }

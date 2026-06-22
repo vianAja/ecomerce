@@ -25,6 +25,7 @@ pipeline {
             }
         }
 
+
         stage('Build Image (Local Jenkins)') {
             steps {
                 script {

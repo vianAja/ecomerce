@@ -4,9 +4,18 @@ pipeline {
     environment {
         STAGING_IP = '172.2.1.10'
         SSH_CRED = 'credentials-stg-server' 
+
+	IMAGES_NAME = 'webapps'
+	IMAGES_TAG = 'v1'
+
 	STAGING_USER = 'jenkins' 
         PROJECT_DIR = '/root/project/ecomerce'
 	PROJECT_DIR_STG = '/home/jenkins/ecomerce'
+
+	PRODUCTION_USER = 'jenkins'
+	PRODUCTION_IP = 'prod'
+	PROJECT_DIR_PROD = '/home/jenkins/ecomerce'
+	PROD_BRANCH = 'production'
     }
 
     stages {
@@ -16,11 +25,12 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
+        stage('Build Image (Local Jenkins)') {
             steps {
                 script {
                     echo "Building Docker Image..."
-                    sh "docker build -t my-app:staging ."
+                    sh "docker build -t ${IMAGES_NAME}:${IMAGES_TAG} ."
+		    sh "docker inspect ${IMAGES_NAME}:${IMAGES_TAG}"
                 }
             }
         }
@@ -44,6 +54,42 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
                             cd ${PROJECT_DIR_STG}
+                            docker compose down
+                            docker compose up -d --build
+                        '
+                    """
+                }
+            }
+        }
+	// --- MANUAL APPROVAL GATE ---
+        stage('Approve Deployment') {
+            steps {
+                script {
+                    input message: 'Staging sukses. Apakah Anda yakin ingin merilis ke PRODUCTION?', ok: 'Deploy ke Production'
+                }
+            }
+        }
+
+	stage('Deploy to Production Server') {
+            steps {
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${PRODUCTION_USER}@${PRODUCTION_IP} '
+			    if [ ! -d ${PROD_BRANCH} ]; then
+                                git clone -b ${PROD_BRANCH} https://github.com/vianAja/ecomerce.git
+                            else
+                                cd ${PROJECT_DIR_PROD}
+                                git pull origin ${PROD_BRANCH}
+                            fi
+                        '
+                    """
+                    withCredentials([file(credentialsId: 'production-env-file', variable: 'SECRET_ENV')]) {
+                        sh 'scp -o StrictHostKeyChecking=no \$SECRET_ENV  ${PRODUCTION_USER}@${PRODUCTION_IP}:${PROJECT_DIR_PROD}/.env'
+                    }
+
+                    sh """
+                        ssh -o StrictHostKeyChecking=no  ${PRODUCTION_USER}@${PRODUCTION_IP} '
+                            cd ${PROJECT_DIR_PROD}
                             docker compose down
                             docker compose up -d --build
                         '

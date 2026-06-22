@@ -31,7 +31,6 @@ pipeline {
                 sshagent(credentials: ["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-			    pwd
 			    git clone -b staging https://github.com/vianAja/ecomerce.git
 
                             cd ${PROJECT_DIR_STG}
@@ -44,9 +43,9 @@ pipeline {
 
                     sh """
                         ssh -o StrictHostKeyChecking=no ${STAGING_USER}@${STAGING_IP} '
-                            cd ${PROJECT_DIR}
-                            docker-compose down
-                            docker-compose up -d --build
+                            cd ${PROJECT_DIR_STG}
+                            docker compose down
+                            docker compose up -d --build
                         '
                     """
                 }

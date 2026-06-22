@@ -5,17 +5,17 @@ pipeline {
         STAGING_IP = '172.2.1.10'
         SSH_CRED = 'credentials-stg-server' 
 
-	IMAGES_NAME = 'webapps'
-	IMAGES_TAG = 'v1'
+    	IMAGES_NAME = 'webapps'
+	    IMAGES_TAG = 'v1'
 
-	STAGING_USER = 'jenkins' 
+    	STAGING_USER = 'jenkins' 
         PROJECT_DIR = '/root/project/ecomerce'
-	PROJECT_DIR_STG = '/home/jenkins/ecomerce'
+	    PROJECT_DIR_STG = '/home/jenkins/ecomerce'
 
-	PRODUCTION_USER = 'jenkins'
-	PRODUCTION_IP = 'prod'
-	PROJECT_DIR_PROD = '/home/jenkins/ecomerce'
-	PROD_BRANCH = 'production'
+    	PRODUCTION_USER = 'jenkins'
+    	PRODUCTION_IP = 'prod'
+    	PROJECT_DIR_PROD = '/home/jenkins/ecomerce'
+    	PROD_BRANCH = 'production'
     }
 
     stages {

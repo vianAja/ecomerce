@@ -52,10 +52,10 @@ Create a **GitRepo** resource in Rancher Fleet with:
 - **Branch**: `deploy/rancher`
 - **Paths**: `./deploy/rancher`
 
-Fleet deploys the bundle to namespace `ecommerce`. The application is exposed as
-an internal ClusterIP Service named `ecommerce` on port `80`. Add an Ingress or
-Rancher Load Balancer after choosing the hostname and TLS configuration for the
-cluster.
+Fleet deploys the bundle to namespace `ecommerce`. The application is exposed
+through a NodePort Service named `ecommerce`: connect to any reachable cluster
+node on port `30080` (for example, `http://<node-ip>:30080`). Ensure the node
+firewall and network rules allow inbound TCP traffic on port `30080`.
 
 Redis is used as a cache and has no persistent storage. The PostgreSQL schema
 initialization file is not applied automatically; back up and manage the

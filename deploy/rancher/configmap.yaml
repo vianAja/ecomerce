@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-config
+  namespace: ecommerce
+data:
+  NODE_ENV: production
+  PORT: "3000"
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_NAME: ecommerce_db
+  DB_USER: ecommerce
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_USER: default
+  CACHE_TTL: "3600"

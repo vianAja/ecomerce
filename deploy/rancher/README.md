@@ -11,9 +11,10 @@ and lifecycle can be managed independently.
    `src/migrations/init.sql` once to initialize its schema and sample products.
 2. In `deploy/rancher/configmap.yaml`, set `DB_HOST`, `DB_PORT`, `DB_NAME`, and
    `DB_USER` to the PostgreSQL endpoint and database credentials.
-3. Create the `ecommerce` namespace, then create the
-   `ecommerce-runtime-secrets` Kubernetes Secret there before deploying this
-   bundle. It must contain these keys:
+3. Fleet targets the `ecommerce` namespace through `fleet.yaml`; do not add a
+   namespace manifest to this bundle. Before the application and Redis pods
+   start, create a Kubernetes Secret named `ecommerce-runtime-secrets` in the
+   `ecommerce` namespace. It must contain these keys:
    - `DB_PASSWORD`: password for the PostgreSQL user.
    - `JWT_SECRET`: a long, random signing key.
    - `REDIS_PASSWORD`: a long, random Redis password.
@@ -21,9 +22,27 @@ and lifecycle can be managed independently.
    namespace using credentials that can pull from `registry.adinusa.id`.
    Do not commit registry or application credentials to Git.
 
-For example, create both secrets in Rancher under **Storage > Secrets** (or use
-your organization's external-secrets workflow). The application secret must be
-available before Fleet creates the Redis and application pods.
+The repository's `.env.sample` documents the expected environment variable
+names. A local `.env.rancher` file is provided for the three Secret values and
+is excluded from Git. Its `JWT_SECRET` is generated; replace `DB_PASSWORD` if it
+does not match the password of the PostgreSQL user configured in
+`configmap.yaml`. The Redis password is `admin123` as requested.
+
+From the `ecomerce` repository root, create or update the runtime Secret with:
+
+```powershell
+kubectl -n ecommerce create secret generic ecommerce-runtime-secrets `
+  --from-env-file=.env.rancher `
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Create the `adinusa-registry` image pull secret separately in the `ecommerce`
+namespace, using registry credentials, or use your organization's
+external-secrets workflow. Fleet does not create application or registry
+Secrets. If the pods already show `CreateContainerConfigError`, create the
+runtime Secret above; Kubernetes will retry starting the pods once it exists.
+Do not make the Secret references optional because the application and Redis
+require these values.
 
 ## Connect Fleet
 

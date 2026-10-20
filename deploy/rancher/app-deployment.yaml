@@ -17,6 +17,26 @@ spec:
     spec:
       imagePullSecrets:
         - name: adinusa-registry
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - >-
+              until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME";
+              do echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT"; sleep 2; done
+          envFrom:
+            - configMapRef:
+                name: ecommerce-config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
       containers:
         - name: ecommerce
           image: registry.adinusa.id/pro-training/node-ecomerce:v1.0
